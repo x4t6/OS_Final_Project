@@ -13,10 +13,10 @@ condition_variable cv;          // 互斥鎖的condition variable
 bool ready = false;             // 告訴 threaduser t 準備好了
 int check_next = 0;             // check_next, count , person把權力交給下一個user
 
-//user相關//
-int user_thread_num = 0 ;      //有幾個人
-int user_id=0 ;                //現在該做事的user的id，配合check_next要用
-const int WAITING=0, IN_CUBICLE=1, SWIMMING=2;
+//user相關
+int user_thread_num = 0 ;                       //有幾個人
+int user_id=0 ;                                 //現在該做事的user的id，配合check_next使用
+const int WAITING=0, IN_CUBICLE=1, SWIMMING=2;  //user的狀態
 
 //更衣室、籃子相關
 int *cubicle_arr;                   //標記cubicle的 狀態陣列
@@ -24,13 +24,13 @@ int *basket_arr;                    //標記basket的 狀態陣列
 int cubicle_num=1;
 int basket_num=2;
 
-const int mapRow=10,mapColumn=25;
-const int cleanMapRow=15,cleanMapColumn=60;
-bool allRoundDone = false ;
-bool space_flag = false;
+//地圖相關
+const int mapRow=10,mapColumn=25;           //地圖長寬
+const int cleanMapRow=15,cleanMapColumn=60; //清理畫面用的地圖的長寬
+bool space_flag = false;                    //是否印出user名字的flag，決定要不要印空白
 
 
-
+//我們的地圖
 string theMap[10][25] =
 {
     {"┌","─","─","─","─","─","─","─","─","─","─","─","─","─","─","─","─","─","─","─","─","─","─","─","┐"},
@@ -55,6 +55,7 @@ string theMap[10][25] =
 
 };
 
+//清理畫面用的地圖
 char aCleanMap[15][60] =
 {
     {' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '},
@@ -88,7 +89,7 @@ public:
     int used_cubicle = -1 ;
     int used_basket = -1 ;
     int swim_count = 0 ;            //游泳counter，希望能游久一點
-    int find_basket_count = 0 ;      //尋找/等待空籃子的counter，太久沒有空籃子的話user會做出反應
+    int find_basket_count = 0 ;     //等待空籃子的counter，太久沒有空籃子的話user會做出反應
 
     bool order_flag = false;        //發過指令的人，flag會變成true
     bool swam_flag = false;
@@ -176,43 +177,6 @@ void name()
         case 2:
             users[i].name='C';
             break;
-        case 3:
-            users[i].name='D';
-            break;
-        case 4:
-            users[i].name='E';
-            break;
-        case 5:
-            users[i].name='F';
-            break;
-        case 6:
-            users[i].name='G';
-            break;
-        case 7:
-            users[i].name='H';
-            break;
-        case 8:
-            users[i].name='J';
-            break;
-        case 9:
-            users[i].name='K';
-            break;
-        case 10:
-            users[i].name='L';
-            break;
-        case 11:
-            users[i].name='M';
-            break;
-        case 12:
-            users[i].name='N';
-            break;
-        case 13:
-            users[i].name='P';
-            break;
-        case 14:
-            users[i].name='Q';
-            break;
-
         }
     }
 }
@@ -222,7 +186,6 @@ void Key_Process()
     user_id++ ;
     if(user_id>=user_thread_num)
     {
-        allRoundDone = true;
         showMap();
         Sleep(10000);
 
