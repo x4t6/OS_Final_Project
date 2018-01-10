@@ -230,7 +230,7 @@ void Key_Process()
         DWORD WriteWord;
         COORD pos;
         hin = GetStdHandle(STD_OUTPUT_HANDLE);
-        pos.X = 0, pos.Y = 0; // 將Caret設在 (5,5) 之地方。
+        pos.X = 0, pos.Y = 0; // 將Caret設在 (0,0) 之地方。
 
         SetConsoleCursorPosition(hin, pos);
         cleanMap();
