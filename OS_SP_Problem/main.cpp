@@ -16,6 +16,7 @@ int check_next = 0;             // check_next, count , person把權力交給下一個use
 //user相關//
 int user_thread_num = 0 ;      //有幾個人
 int user_id=0 ;                //現在該做事的user的id，配合check_next要用
+const int WAITING=0, IN_CUBICLE=1, SWIMMING=2;
 
 //更衣室、籃子相關
 int *cubicle_arr;                   //標記cubicle的 狀態陣列
@@ -23,7 +24,55 @@ int *basket_arr;                    //標記basket的 狀態陣列
 int cubicle_num=1;
 int basket_num=2;
 
-const int WAITING=0, IN_CUBICLE=1, SWIMMING=2;
+const int mapRow=10,mapColumn=25;
+const int cleanMapRow=15,cleanMapColumn=60;
+bool allRoundDone = false ;
+bool space_flag = false;
+
+
+
+string theMap[10][25] =
+{
+    {"┌","─","─","─","─","─","─","─","─","─","─","─","─","─","─","─","─","─","─","─","─","─","─","─","┐"},
+
+    {"│"," "," "," ","W"," "," "," "," "," ","C"," "," "," "," "," "," "," "," ","S"," "," "," "," ","│"},
+
+    {"│"," "," "," "," "," "," "," "," ","┌","─","┐"," "," "," "," ","┌","─","─","─","┐"," "," "," ","│"},
+
+    {"│"," "," ","["," ","]"," "," "," ","│"," ","│"," "," "," "," ","│"," "," "," ","│"," "," "," ","│"},
+
+    {"│"," "," "," "," "," "," "," "," ","└","─","┘"," "," "," "," ","│"," "," "," ","│"," "," "," ","│"},
+
+    {"│"," "," ","["," ","]"," "," "," "," "," "," "," "," "," "," ","│"," "," "," ","│"," "," "," ","│"},
+
+    {"│"," "," "," "," "," "," "," ","B"," "," "," ","B"," "," "," ","│"," "," "," ","│"," "," "," ","│"},
+
+    {"│"," "," ","["," ","]"," ","["," ","]"," ","["," ","]"," "," ","└","─","─","─","┘"," "," "," ","│"},
+
+    {"│"," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ","│"},
+
+    {"└","─","─","─","─","─","─","─","─","─","─","─","─","─","─","─","─","─","─","─","─","─","─","─","┘"},
+
+};
+
+char aCleanMap[15][60] =
+{
+    {' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '},
+    {' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '},
+    {' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '},
+    {' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '},
+    {' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '},
+    {' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '},
+    {' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '},
+    {' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '},
+    {' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '},
+    {' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '},
+    {' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '},
+    {' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '},
+    {' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '},
+    {' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '},
+    {' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '},
+};
 
 class USER
 {
@@ -43,6 +92,12 @@ public:
 
     bool order_flag = false;        //發過指令的人，flag會變成true
     bool swam_flag = false;
+    bool firstRound = true;
+
+    int atMapRow = -1 ;
+    int atMapColumn = -1;
+    int used_basket_row = -1;
+    int used_basket_column = -1;
 
 };
 
@@ -53,6 +108,57 @@ void SetColor(int f=7,int b=0)
     unsigned short ForeColor=f+16*b;
     HANDLE hCon = GetStdHandle(STD_OUTPUT_HANDLE);
     SetConsoleTextAttribute(hCon,ForeColor);
+}
+
+void showMap()
+{
+    for(int row = 0; row<mapRow; row++)
+    {
+        for(int column = 0; column<mapColumn; column++)
+        {
+            for(int id=0; id<3; id++)
+            {
+                if(row==users[id].atMapRow && column == users[id].atMapColumn)
+                {
+
+                    SetColor(users[id].color,0);
+                    cout<<users[id].name;
+                    SetColor();
+                    space_flag = true;
+                }
+                if(row==users[id].used_basket_row && column == users[id].used_basket_column)
+                {
+
+                    SetColor(users[id].color,0);
+                    cout<<users[id].name;
+                    SetColor();
+                    space_flag = true;
+                }
+            }
+            if(space_flag)
+            {
+                space_flag = false;
+            }
+            else
+            {
+                cout<<theMap[row][column];
+            }
+
+        }
+        cout<<endl;
+    }
+}
+
+void cleanMap()
+{
+    for(int row = 0; row<cleanMapRow; row++)
+    {
+        for(int column = 0; column<cleanMapColumn; column++)
+        {
+            cout<<aCleanMap[row][column];
+        }
+        cout<<endl;
+    }
 }
 
 void name()
@@ -113,11 +219,35 @@ void name()
 
 void Key_Process()
 {
-    Sleep(800);
     user_id++ ;
-    if(user_id>=user_thread_num)user_id=0 ;
+    if(user_id>=user_thread_num)
+    {
+        allRoundDone = true;
+        showMap();
+        Sleep(6000);
+
+        HANDLE hin;
+        DWORD WriteWord;
+        COORD pos;
+        hin = GetStdHandle(STD_OUTPUT_HANDLE);
+        pos.X = 0, pos.Y = 0; // 將Caret設在 (5,5) 之地方。
+
+        SetConsoleCursorPosition(hin, pos);
+        cleanMap();
+
+        SetConsoleCursorPosition(hin, pos);
+
+        user_id=0 ;
+
+        for(int i =0; i<user_thread_num; i++)
+        {
+            users[i].order_flag = false;
+        }
+
+    }
     if(users[user_id].order_flag==true)check_next=999;
     else if(users[user_id].order_flag!=true)check_next = user_id ;
+
 }
 
 void run()
@@ -145,6 +275,11 @@ void leave_basket(int id)
     SetColor(users[id].color,0);
     cout<<users[id].name<<"清空了他的籃子，";
     SetColor();
+
+    theMap[users[id].used_basket_row][users[id].used_basket_column]=" ";
+    users[id].used_basket_row=-1;
+    users[id].used_basket_column=-1;
+
 }
 void go_swimmig(int id)
 {
@@ -156,6 +291,21 @@ void go_swimmig(int id)
     SetColor(users[id].color,0);
     cout<<users[id].name<<"去游泳了\n";
     SetColor();
+    if(id==0)
+    {
+        users[id].atMapRow = 3;
+        users[id].atMapColumn = 18;
+    }
+    else if(id==1)
+    {
+        users[id].atMapRow = 5;
+        users[id].atMapColumn = 18;
+    }
+    else if(id==2)
+    {
+        users[id].atMapRow = 6;
+        users[id].atMapColumn = 18;
+    }
 
 }
 
@@ -166,10 +316,24 @@ void back_to_waiting_room(int id)
     users[id].swim_count = 0 ;
     users[id].find_basket_count = 0;
 
-    //users[id].order_flag = true;
     SetColor(users[id].color,0);
     cout<<users[id].name<<"回去等待室\n";
     SetColor();
+    if(id==0)
+    {
+        users[id].atMapRow = 3;
+        users[id].atMapColumn = 4;
+    }
+    else if(id==1)
+    {
+        users[id].atMapRow = 5;
+        users[id].atMapColumn = 4;
+    }
+    else if(id==2)
+    {
+        users[id].atMapRow = 7;
+        users[id].atMapColumn = 4;
+    }
 }
 
 void find_empty_cubicle(int id)
@@ -183,14 +347,16 @@ void find_empty_cubicle(int id)
             users[id].state = IN_CUBICLE;//更改user state
 
             SetColor(users[id].color,0);
-            cout<<"第"<<i<<"間更衣室被"<<users[id].name<<"用了\n";
+            cout<<users[id].name<<"使用了更衣室\n";
             SetColor();
+            users[id].atMapRow = 3;
+            users[id].atMapColumn = 10;
 
             return;
         }
     }
     SetColor(users[id].color,0);
-    cout<<users[id].name<<"找不到空的更衣室\n";
+    cout<<users[id].name<<"找不到空的更衣室，繼續等待\n";
     SetColor();
 }
 
@@ -206,10 +372,23 @@ void find_empty_basket(int id)
 
             SetColor(users[id].color,0);
 
-            cout<<users[id].name<<"發現編號"<<i<<"的籃子，內容為"<<basket_arr[i]<<"，是可以用的。因此";
-            cout<<users[id].name<<"正在用編號"<<users[id].used_basket<<"的籃子\n";
+            cout<<users[id].name<<"發現第"<<i+1<<"個籃子是空的，因此";
+            cout<<users[id].name<<"使用了第"<<users[id].used_basket<<"個籃子\n";
 
             SetColor();
+
+            if(theMap[7][8]==" ")
+            {
+                users[id].used_basket_row=7;
+                users[id].used_basket_column=8;
+                theMap[7][8]=users[id].name;
+            }
+            else if(theMap[7][12]==" ")
+            {
+                users[id].used_basket_row=7;
+                users[id].used_basket_column=12;
+                theMap[7][8]=users[id].name;
+            }
 
             go_swimmig(id);
             return;
@@ -222,7 +401,8 @@ void find_empty_basket(int id)
         SetColor();
 
         users[id].find_basket_count+=1;
-    }else
+    }
+    else
     {
         SetColor(users[id].color,0);
         cout<<users[id].name<<"等空的籃子等太久了，決定回去等待室\n";
@@ -231,9 +411,7 @@ void find_empty_basket(int id)
         leave_cubicle(id);
         back_to_waiting_room(id);
     }
-
 }
-
 
 void play(int id)
 {
@@ -246,28 +424,47 @@ void play(int id)
             cv.wait(lck);
         }
         check_next=999;
-
-        users[id].id = id ;
-        name();
-
-        users[id].color=id+2;
-
-
+        if(users[id].firstRound)
+        {
+            users[id].id = id ;
+            name();
+            //users[id].color=id+2;
+            if(id==0)
+            {
+                users[id].atMapRow = 3 ;
+                users[id].atMapColumn = 4;
+                users[id].color=7;
+                //theMap[users[id].atMapRow][users[id].atMapColumn] = users[id].name;
+            }
+            else if(id==1)
+            {
+                users[id].atMapRow = 5 ;
+                users[id].atMapColumn = 4;
+                users[id].color=3;
+                //theMap[users[id].atMapRow][users[id].atMapColumn] = users[id].name;
+            }
+            else if(id==2)
+            {
+                users[id].atMapRow = 7 ;
+                users[id].atMapColumn = 4;
+                users[id].color=6;
+                //theMap[users[id].atMapRow][users[id].atMapColumn] = users[id].name;
+            }
+            users[id].firstRound = false;
+            //cout<<"first";
+        }
         //cout<<id<<" doing something...\n";
         if(users[id].swam_flag==false) //還沒游泳的，準備去游泳
         {
             if(users[id].state==WAITING)
             {
                 find_empty_cubicle(id);
-                //users[id].order_flag = true;
             }
             else if(users[id].state==IN_CUBICLE)
             {
                 find_empty_basket(id);
-
-                //users[id].order_flag = true;
             }
-
+            users[id].order_flag = true;
         }
 
         if(users[id].swam_flag==true)   //游過泳的，準備回等待區
@@ -276,15 +473,17 @@ void play(int id)
             {
                 if(users[id].swim_count<=1)
                 {
+                    if(users[id].swim_count>0)
+                    {
+                        SetColor(users[id].color);
+                        cout<<users[id].name<<"還在游泳，";
+                        cout<<users[id].name<<"正在用編號"<<users[id].used_basket<<"的籃子\n";
+                        SetColor();
+                    }
                     users[id].swim_count++;
-
-                    SetColor(users[id].color);
-                    cout<<users[id].name<<"還在游泳，";
-                    cout<<users[id].name<<"正在用編號"<<users[id].used_basket<<"的籃子\n";
-                    SetColor();
-
-                }else{
-
+                }
+                else
+                {
                     SetColor(users[id].color);
                     cout<<users[id].name<<"游完泳了，";
                     SetColor();
@@ -292,22 +491,19 @@ void play(int id)
                     find_empty_cubicle(id);
 
                 }
-                //users[id].order_flag = true;
             }
             else if(users[id].state==IN_CUBICLE)
             {
                 leave_cubicle(id);
                 leave_basket(id);
                 back_to_waiting_room(id);
-                //users[id].order_flag = true;
             }
-
+            users[id].order_flag = true;
         }
 
         Key_Process();
         cv.notify_all();
-    }
-
+    }//while
 }
 
 int main( int argc, char** argv )
@@ -316,11 +512,11 @@ int main( int argc, char** argv )
     cubicle_num = 1;
     basket_num = 2;
 
-    cout<<"請輸入幾個人(最多3個)：\n";
+    //cout<<"請輸入幾個人(最多7個)：\n";
     //cin>>user_thread_num;
-    user_thread_num = 3;
+    user_thread_num = 3  ;
 
-    while(user_thread_num<1||user_thread_num>3)
+    while(user_thread_num<1||user_thread_num>7)
     {
         cout<<"只能輸入1到3個人! :";
         cin>>user_thread_num;
@@ -339,7 +535,6 @@ int main( int argc, char** argv )
         thread_users[id] = thread(play, id);
 
     run();
-
     for(int id = 0; id <user_thread_num; id++)thread_users[id].join();
 
     cout << endl;
