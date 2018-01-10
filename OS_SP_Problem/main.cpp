@@ -36,6 +36,11 @@ public:
 
 
     int state=0;
+    int used_cubicle = -1 ;
+    int used_basket = -1 ;
+    int swim_count = 0 ;            //村猘counter辨村翴
+    int find_basket_count = 0 ;      //碝т/单膞counterび⊿Τ膞杠user穦暗は莱
+
     bool order_flag = false;        //祇筁flag穦跑Θtrue
     bool swam_flag = false;
 
@@ -108,11 +113,11 @@ void name()
 
 void Key_Process()
 {
-    Sleep(200);
+    Sleep(800);
     user_id++ ;
     if(user_id>=user_thread_num)user_id=0 ;
-    if(users[user_id].order_flag==1)check_next=999;
-    else if(users[user_id].order_flag!=1)check_next = user_id ;
+    if(users[user_id].order_flag==true)check_next=999;
+    else if(users[user_id].order_flag!=true)check_next = user_id ;
 }
 
 void run()
@@ -121,21 +126,114 @@ void run()
     ready = true;
     cv.notify_all();                    //release lock
 }
+void leave_cubicle(int id)
+{
+    cubicle_arr[users[id].used_cubicle] = -1 ;
+    users[id].used_cubicle = -1;
 
-void find_empty_cubicle(int id){
-    for(int i =0 ; i<cubicle_num ; i++){
-         if(cubicle_arr[i]==-1){
-            cubicle_arr[i]=id;
-            users[id].state = IN_CUBICLE;
+    SetColor(users[id].color,0);
+    cout<<users[id].name<<"瞒秨︾";
+    SetColor();
 
+}
+
+void leave_basket(int id)
+{
+    basket_arr[users[id].used_basket] = -1 ;
+    users[id].used_basket = -1;
+
+    SetColor(users[id].color,0);
+    cout<<users[id].name<<"睲膞";
+    SetColor();
+}
+void go_swimmig(int id)
+{
+    users[id].state = SWIMMING;
+    users[id].swam_flag = true;
+
+    leave_cubicle(id);
+
+    SetColor(users[id].color,0);
+    cout<<users[id].name<<"村猘\n";
+    SetColor();
+
+}
+
+void back_to_waiting_room(int id)
+{
+    users[id].state = WAITING;
+    users[id].swam_flag = false;
+    users[id].swim_count = 0 ;
+    users[id].find_basket_count = 0;
+
+    //users[id].order_flag = true;
+    SetColor(users[id].color,0);
+    cout<<users[id].name<<"单\n";
+    SetColor();
+}
+
+void find_empty_cubicle(int id)
+{
+    for(int i =0 ; i<cubicle_num ; i++)
+    {
+        if(cubicle_arr[i]==-1)//т︾
+        {
+            cubicle_arr[i]=id;//ノウ
+            users[id].used_cubicle = i ;
+            users[id].state = IN_CUBICLE;//эuser state
+
+            SetColor(users[id].color,0);
             cout<<"材"<<i<<"丁︾砆"<<users[id].name<<"ノ\n";
-            system("color 肅︹");
+            SetColor();
+
             return;
-         }
+        }
     }
+    SetColor(users[id].color,0);
     cout<<users[id].name<<"тぃ︾\n";
     SetColor();
 }
+
+void find_empty_basket(int id)
+{
+
+    for(int i =0 ; i<basket_num ; i++)
+    {
+        if(basket_arr[i]==-1)//т膞
+        {
+            basket_arr[i]=id;//ノウ
+            users[id].used_basket = i;
+
+            SetColor(users[id].color,0);
+
+            cout<<users[id].name<<"祇瞷絪腹"<<i<<"膞ず甧"<<basket_arr[i]<<"琌ノ";
+            cout<<users[id].name<<"タノ絪腹"<<users[id].used_basket<<"膞\n";
+
+            SetColor();
+
+            go_swimmig(id);
+            return;
+        }
+    }
+    if(users[id].find_basket_count<=1)
+    {
+        SetColor(users[id].color,0);
+        cout<<users[id].name<<"单ぃ膞膥尿︾\n";
+        SetColor();
+
+        users[id].find_basket_count+=1;
+    }else
+    {
+        SetColor(users[id].color,0);
+        cout<<users[id].name<<"单膞单び∕﹚单\n";
+        SetColor();
+
+        leave_cubicle(id);
+        back_to_waiting_room(id);
+    }
+
+}
+
 
 void play(int id)
 {
@@ -151,43 +249,59 @@ void play(int id)
 
         users[id].id = id ;
         name();
-        users[id].color=id+1;
 
-        srand(time(NULL));
-        Sleep(200);
+        users[id].color=id+2;
 
-        cout<<id<<" doing something...\n";
+
+        //cout<<id<<" doing something...\n";
         if(users[id].swam_flag==false) //临⊿村猘非称村猘
         {
             if(users[id].state==WAITING)
             {
                 find_empty_cubicle(id);
-
+                //users[id].order_flag = true;
             }
             else if(users[id].state==IN_CUBICLE)
             {
+                find_empty_basket(id);
 
+                //users[id].order_flag = true;
             }
-            else if(users[id].state==SWIMMING)
-            {
 
-            }
         }
 
         if(users[id].swam_flag==true)   //村筁猘非称单跋
         {
-            if(users[id].state==WAITING)
+            if(users[id].state==SWIMMING)
             {
+                if(users[id].swim_count<=1)
+                {
+                    users[id].swim_count++;
 
+                    SetColor(users[id].color);
+                    cout<<users[id].name<<"临村猘";
+                    cout<<users[id].name<<"タノ絪腹"<<users[id].used_basket<<"膞\n";
+                    SetColor();
+
+                }else{
+
+                    SetColor(users[id].color);
+                    cout<<users[id].name<<"村Ч猘";
+                    SetColor();
+
+                    find_empty_cubicle(id);
+
+                }
+                //users[id].order_flag = true;
             }
             else if(users[id].state==IN_CUBICLE)
             {
-
+                leave_cubicle(id);
+                leave_basket(id);
+                back_to_waiting_room(id);
+                //users[id].order_flag = true;
             }
-            else if(users[id].state==SWIMMING)
-            {
 
-            }
         }
 
         Key_Process();
@@ -226,13 +340,8 @@ int main( int argc, char** argv )
 
     run();
 
-
     for(int id = 0; id <user_thread_num; id++)thread_users[id].join();
 
-
     cout << endl;
-
-    return 0;
-
     return 0;
 }
