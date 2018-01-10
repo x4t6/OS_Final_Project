@@ -1,0 +1,10 @@
+# depslib dependency file v1.0
+1515580025 source:c:\users\user\documents\github\os_final_project\os_sp_problem\main.cpp
+	<iostream>
+	<thread>
+	<mutex>
+	<condition_variable>
+	<cstdlib>
+	<ctime>
+	<windows.h>
+
