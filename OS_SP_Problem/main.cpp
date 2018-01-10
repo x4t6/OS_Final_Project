@@ -224,7 +224,7 @@ void Key_Process()
     {
         allRoundDone = true;
         showMap();
-        Sleep(6000);
+        Sleep(10000);
 
         HANDLE hin;
         DWORD WriteWord;
@@ -373,7 +373,7 @@ void find_empty_basket(int id)
             SetColor(users[id].color,0);
 
             cout<<users[id].name<<"發現第"<<i+1<<"個籃子是空的，因此";
-            cout<<users[id].name<<"使用了第"<<users[id].used_basket<<"個籃子\n";
+            cout<<users[id].name<<"使用了第"<<users[id].used_basket+1<<"個籃子\n";
 
             SetColor();
 
@@ -433,21 +433,21 @@ void play(int id)
             {
                 users[id].atMapRow = 3 ;
                 users[id].atMapColumn = 4;
-                users[id].color=7;
+                users[id].color=10;
                 //theMap[users[id].atMapRow][users[id].atMapColumn] = users[id].name;
             }
             else if(id==1)
             {
                 users[id].atMapRow = 5 ;
                 users[id].atMapColumn = 4;
-                users[id].color=3;
+                users[id].color=12;
                 //theMap[users[id].atMapRow][users[id].atMapColumn] = users[id].name;
             }
             else if(id==2)
             {
                 users[id].atMapRow = 7 ;
                 users[id].atMapColumn = 4;
-                users[id].color=6;
+                users[id].color=11;
                 //theMap[users[id].atMapRow][users[id].atMapColumn] = users[id].name;
             }
             users[id].firstRound = false;
@@ -487,7 +487,6 @@ void play(int id)
                     SetColor(users[id].color);
                     cout<<users[id].name<<"游完泳了，";
                     SetColor();
-
                     find_empty_cubicle(id);
 
                 }
@@ -516,11 +515,6 @@ int main( int argc, char** argv )
     //cin>>user_thread_num;
     user_thread_num = 3  ;
 
-    while(user_thread_num<1||user_thread_num>7)
-    {
-        cout<<"只能輸入1到3個人! :";
-        cin>>user_thread_num;
-    }
     thread thread_users[user_thread_num];           //一個thread代表一個user
 
 
